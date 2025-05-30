@@ -1,38 +1,41 @@
-import { DataTypes, Model } from 'sequelize';
-import { sequelize } from './index';
+import { DataTypes, Model, Sequelize } from "sequelize";
 
-class Order extends Model {}
+class Order extends Model {
+  public id!: number;
+  public customerId!: number;
+  public status!: string;
+  public totalAmount!: number;
 
-Order.init({
-  id: {
-    type: DataTypes.INTEGER,
-    autoIncrement: true,
-    primaryKey: true
-  },
-  customerName: {
-    type: DataTypes.STRING,
-    allowNull: false
-  },
-  email: {
-    type: DataTypes.STRING
-  },
-  address: {
-    type: DataTypes.TEXT,
-    allowNull: false
-  },
-  status: {
-    type: DataTypes.ENUM('Pending', 'Confirmed', 'Shipped', 'Delivered', 'Cancelled'),
-    defaultValue: 'Pending'
-  },
-  totalAmount: {
-    type: DataTypes.FLOAT,
-    allowNull: false
+  static initModel(sequelize: Sequelize) {
+    Order.init(
+      {
+        id: {
+          type: DataTypes.INTEGER,
+          autoIncrement: true,
+          primaryKey: true,
+        },
+        customerId: {
+          type: DataTypes.INTEGER,
+          allowNull: false,
+        },
+        status: {
+          type: DataTypes.STRING,
+          allowNull: false,
+          defaultValue: "pending", // optional: pending, shipped, delivered, etc.
+        },
+        totalAmount: {
+          type: DataTypes.DECIMAL(10, 2),
+          allowNull: false,
+        },
+      },
+      {
+        sequelize,
+        modelName: "Order",
+        tableName: "orders",
+        timestamps: true,
+      }
+    );
   }
-}, {
-  sequelize,
-  modelName: 'Order',
-  tableName: 'orders',
-  timestamps: true
-});
+}
 
 export default Order;

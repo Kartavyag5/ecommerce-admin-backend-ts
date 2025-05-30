@@ -1,9 +1,17 @@
 import { Request, Response } from 'express';
-import { Product } from '../models';
+import { Product, Category } from "../models";
 
-export const getAllProducts = async (_req: Request, res: Response) => {
-  const products = await Product.findAll();
-  res.json(products);
+export const getAllProducts = async (req: any, res: any) => {
+  try {
+    const products = await Product.findAll({
+      include: [
+        { model: Category, as: "category", attributes: ["id", "name"] },
+      ],
+    });
+    res.json(products);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 };
 
 export const getProductById = async (req: Request, res: Response) => {

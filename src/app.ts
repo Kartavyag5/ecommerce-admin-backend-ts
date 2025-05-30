@@ -7,6 +7,7 @@ import categoryRoutes from './routes/category.routes';
 import orderRoutes from './routes/order.routes';
 import customerRoutes from './routes/customer.routes';
 import dashboardRoutes from './routes/dashboard.routes';
+import adminAuthRoutes from "./routes/adminAuth.routes";
 
 dotenv.config();
 
@@ -20,5 +21,6 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/customers', customerRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use("/api/admin/auth", adminAuthRoutes);
 
 export default app;

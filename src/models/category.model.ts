@@ -1,27 +1,36 @@
-import { DataTypes, Model } from 'sequelize';
-import { sequelize } from './index';
+import { DataTypes, Model, Sequelize } from "sequelize";
+import { sequelize } from "./index";
 
-class Category extends Model {}
+class Category extends Model {
+  public id!: number;
+  public name!: string;
+  public description?: string;
 
-Category.init({
-  id: {
-    type: DataTypes.INTEGER,
-    autoIncrement: true,
-    primaryKey: true
-  },
-  name: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    unique: true
-  },
-  description: {
-    type: DataTypes.TEXT
+  static initModel(sequelize: Sequelize) {
+    Category.init(
+      {
+        id: {
+          type: DataTypes.INTEGER,
+          autoIncrement: true,
+          primaryKey: true,
+        },
+        name: {
+          type: DataTypes.STRING,
+          allowNull: false,
+          unique: true,
+        },
+        description: {
+          type: DataTypes.TEXT,
+        },
+      },
+      {
+        sequelize,
+        modelName: "Category",
+        tableName: "categories",
+        timestamps: true,
+      }
+    );
   }
-}, {
-  sequelize,
-  modelName: 'Category',
-  tableName: 'categories',
-  timestamps: true
-});
+}
 
 export default Category;
