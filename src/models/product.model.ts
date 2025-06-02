@@ -29,7 +29,7 @@ class Product extends Model {
         },
 
         imageUrl: {
-          type: DataTypes.STRING,
+          type: DataTypes.TEXT,
         },
         categoryId: {
           type: DataTypes.INTEGER,

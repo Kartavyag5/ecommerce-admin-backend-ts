@@ -1,8 +1,16 @@
 import { Request, Response } from 'express';
-import { Order } from '../models';
+import { Customer, Order } from "../models";
 
 export const getAllOrders = async (_req: Request, res: Response) => {
-  const orders = await Order.findAll();
+  const orders = await Order.findAll({
+    include: [
+      {
+        model: Customer,
+        as: "customer",
+        attributes: ["id", "firstName", "LastName"],
+      },
+    ],
+  });
   res.json(orders);
 };
 

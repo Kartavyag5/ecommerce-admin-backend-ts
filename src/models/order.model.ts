@@ -17,6 +17,10 @@ class Order extends Model {
         customerId: {
           type: DataTypes.INTEGER,
           allowNull: false,
+          references: {
+            model: "customers",
+            key: "id",
+          },
         },
         status: {
           type: DataTypes.STRING,

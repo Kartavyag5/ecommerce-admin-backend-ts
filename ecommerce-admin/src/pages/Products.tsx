@@ -11,6 +11,9 @@ import type { Category } from '../types/Category';
 import { Upload } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import type { UploadChangeParam } from 'antd/es/upload';
+import API from '../api/axios';
+import axios from 'axios';
+import img from '../../../uploads/imageUrl-1748842278864-663639991.png';
 
 const Products = () => {
     const [products, setProducts] = useState<Product[]>([]);
@@ -64,7 +67,7 @@ const Products = () => {
     const handleSubmit = async () => {
         try {
             const values = await form.validateFields();
-            values.image = imagePreview;
+            console.log('values: ', values);
             if (editingProduct) {
                 await updateProduct(editingProduct.id, values);
                 message.success('Product updated');
@@ -92,13 +95,12 @@ const Products = () => {
 
     const columns = [
         {
-            title: 'Image',
-            dataIndex: 'image',
-            render: (img: string) => img ? <img src={img} alt="product" style={{ width: 50, height: 50, objectFit: 'cover' }} /> : '—'
+            title: 'Image', dataIndex: 'imageUrl', render: (url: string) =>
+                url ? <img src={`http://localhost:3000${url}`} alt="Product" height={50} /> : '—'
         },
         { title: 'ID', dataIndex: 'id', width: 60 },
         { title: 'Name', dataIndex: 'name' },
-        { title: 'Price', dataIndex: 'price', render: (price: any) => `$${parseFloat(price).toFixed(2)}` },
+        { title: 'Price', dataIndex: 'price', render: (price: any) => `₹ ${parseFloat(price).toFixed(2)}` },
         { title: 'stock', dataIndex: 'stock' },
         {
             title: 'Category',
@@ -164,31 +166,43 @@ const Products = () => {
                             }))}
                         />
                     </Form.Item>
-                    <Form.Item label="Image">
-                        <Upload
-                            beforeUpload={(file) => {
-                                const reader = new FileReader();
-                                reader.onload = (e) => {
-                                    setImagePreview(e.target?.result as string);
-                                };
-                                reader.readAsDataURL(file);
-                                return false; // prevent auto upload
+                    <Form.Item label="Product Image">
+                        <input
+                            type="file"
+                            accept="image/*"
+                            onChange={async (e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                    const formData = new FormData();
+                                    formData.append('imageUrl', file);
+                                    try {
+                                        const res: any = await axios.post('http://localhost:3000/api/upload/image', formData);
+                                        const uploadedUrl = res?.data?.url;
+
+                                        form.setFieldsValue({ imageUrl: uploadedUrl }); // Just setting the URL
+                                        setImagePreview(uploadedUrl); // Set preview
+                                    } catch (err) {
+                                        message.error('Failed to upload image');
+                                    }
+                                }
                             }}
-                            showUploadList={false}
-                        >
-                            <Button icon={<UploadOutlined />}>Upload Image</Button>
-                        </Upload>
+                        />
+                        <Form.Item name="imageUrl" noStyle>
+                            <Input type="hidden" />
+                        </Form.Item>
+
                         {imagePreview && (
                             <img
-                                src={imagePreview}
-                                alt="preview"
-                                style={{ marginTop: 10, width: '100%', maxHeight: 200, objectFit: 'contain' }}
+                                src={`http://localhost:3000${imagePreview}`}
+                                alt="Preview"
+                                style={{ marginTop: 10, width: 100 }}
                             />
                         )}
                     </Form.Item>
 
                 </Form>
             </Modal>
+
         </div>
     );
 };
