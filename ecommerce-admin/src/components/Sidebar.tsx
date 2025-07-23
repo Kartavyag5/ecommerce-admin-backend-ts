@@ -1,6 +1,6 @@
 // src/components/Sidebar.tsx
 import { Layout, Menu } from 'antd';
-import { DashboardOutlined, ShoppingOutlined, TagsOutlined, TeamOutlined, FileTextOutlined } from '@ant-design/icons';
+import { DashboardOutlined, ShoppingOutlined, TagsOutlined, TeamOutlined, FileTextOutlined, ShoppingCartOutlined, DropboxOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 
 const { Sider } = Layout;
@@ -21,6 +21,8 @@ const Sidebar = () => {
           { key: '/categories', icon: <TagsOutlined />, label: 'Categories' },
           { key: '/orders', icon: <FileTextOutlined />, label: 'Orders' },
           { key: '/customers', icon: <TeamOutlined />, label: 'Customers' },
+          { key: '/order-items', icon: <DropboxOutlined />, label: 'Order Items' },
+          { key: '/cart-items', icon: <ShoppingCartOutlined />, label: 'Cart Items' },
         ]}
       />
     </Sider>

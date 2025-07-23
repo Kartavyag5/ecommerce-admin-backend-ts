@@ -1,10 +1,11 @@
 // api/orderApi.ts
 import API from './axios'; // your axios instance
 
-export const getOrders = async () => {
-  const res = await API.get('/orders');
-  return res.data;
+export const getOrders = async (params = {}) => {
+  const response = await API.get("/orders", { params });
+  return response.data;
 };
+
 
 export const createOrder = async (order: any) => {
   const res = await API.post('/orders', order);

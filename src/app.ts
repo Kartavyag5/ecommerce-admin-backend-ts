@@ -9,7 +9,9 @@ import customerRoutes from './routes/customer.routes';
 import dashboardRoutes from './routes/dashboard.routes';
 import adminAuthRoutes from "./routes/adminAuth.routes";
 import uploadRoute from "./routes/uploadRoute";
+import orderItemsRoutes from "./routes/orderItems.routes";
 import path from "path";
+import customerCartRoutes from "./routes/customerCart.routes";
 
 dotenv.config();
 
@@ -24,7 +26,8 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/customers", customerRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/admin/auth", adminAuthRoutes);
-
+app.use("/api/order-items", orderItemsRoutes);
+app.use("/api/customer-cart", customerCartRoutes);
 app.use("/api/upload", uploadRoute);
 
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));

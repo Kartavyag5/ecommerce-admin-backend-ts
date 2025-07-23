@@ -2,18 +2,18 @@ import { useEffect, useState } from 'react';
 import {
     Table, Button, Modal, Form, Input, InputNumber, Space, Popconfirm, message
 } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
 import { getProducts, createProduct, updateProduct, deleteProduct } from '../api/productApi';
 import type { Product } from '../types/Product';
 import { Select } from 'antd';
 import { getCategories } from '../api/categoryApi';
 import type { Category } from '../types/Category';
-import { Upload } from 'antd';
-import { UploadOutlined } from '@ant-design/icons';
-import type { UploadChangeParam } from 'antd/es/upload';
-import API from '../api/axios';
 import axios from 'axios';
-import img from '../../../uploads/imageUrl-1748842278864-663639991.png';
+// import { Upload } from 'antd';
+// import { UploadOutlined } from '@ant-design/icons';
+// import type { UploadChangeParam } from 'antd/es/upload';
+// import API from '../api/axios';
+// import img from '../../../uploads/imageUrl-1748842278864-663639991.png';
 
 const Products = () => {
     const [products, setProducts] = useState<Product[]>([]);
@@ -22,6 +22,10 @@ const Products = () => {
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
     const [categories, setCategories] = useState<Category[]>([]);
     const [imagePreview, setImagePreview] = useState<string>('');
+    const [pagination, setPagination] = useState({ current: 1, pageSize: 10, total: 0 });
+    const [sorter, setSorter] = useState<any>({});
+    const [filters, setFilters] = useState<{ search?: string; categoryId?: number; minPrice?: number; maxPrice?: number; stock?: number }>({});
+    const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
     useEffect(() => {
         loadProducts();
@@ -30,21 +34,33 @@ const Products = () => {
         });
     }, []);
 
-
-
     const [form] = Form.useForm();
 
-    const loadProducts = async () => {
+    const loadProducts = async (
+        page = pagination.current,
+        pageSize = pagination.pageSize,
+        sortField = sorter.field || 'createdAt',
+        sortOrder = sorter.order === 'ascend' ? 'ASC' : 'DESC'
+    ) => {
         setLoading(true);
         try {
-            const data = await getProducts();
-            setProducts(data);
-        } catch (err) {
+            const params = {
+                page,
+                limit: pageSize,
+                sortBy: sortField,
+                order: sortOrder,
+                ...filters,
+            };
+            const res = await getProducts(params);
+            setProducts(res.data);
+            setPagination(prev => ({ ...prev, total: res.total }));
+        } catch {
             message.error('Failed to load products');
         } finally {
             setLoading(false);
         }
     };
+
 
     useEffect(() => {
         loadProducts();
@@ -62,7 +78,6 @@ const Products = () => {
         }
         setIsModalOpen(true);
     };
-
 
     const handleSubmit = async () => {
         try {
@@ -83,58 +98,172 @@ const Products = () => {
     };
 
 
-    const handleDelete = async (id: number) => {
+    const handleDelete = async (id?: number) => {
         try {
+            if (id) {
             await deleteProduct(id);
             message.success('Product deleted');
+            } else if (selectedRowKeys.length) {
+                await deleteProduct({ ids: selectedRowKeys } as any);
+                message.success(`${selectedRowKeys.length} products deleted`);
+                setSelectedRowKeys([]);
+            } else {
+                message.warning('No product selected');
+                return;
+            }
             loadProducts();
         } catch {
             message.error('Failed to delete');
         }
     };
 
+
+
+    const handleReset = () => {
+        setFilters({});
+        setSorter({});
+        setPagination({ ...pagination, current: 1 }); // reset to first page
+        loadProducts(1, pagination.pageSize, 'createdAt', 'DESC'); // default sort
+    };
+
+
     const columns = [
         {
-            title: 'Image', dataIndex: 'imageUrl', render: (url: string) =>
-                url ? <img src={`http://localhost:3000${url}`} alt="Product" height={50} /> : '—'
+            title: 'Image',
+            dataIndex: 'imageUrl',
+            render: (url: string) =>
+                url ? <img src={url.includes('/uploads') ? `http://localhost:3000${url}` : url} alt="Product" height={50} /> : '—',
         },
-        { title: 'ID', dataIndex: 'id', width: 60 },
-        { title: 'Name', dataIndex: 'name' },
-        { title: 'Price', dataIndex: 'price', render: (price: any) => `₹ ${parseFloat(price).toFixed(2)}` },
-        { title: 'stock', dataIndex: 'stock' },
+        {
+            title: 'ID',
+            dataIndex: 'id',
+            width: 60,
+        },
+        {
+            title: 'Name',
+            dataIndex: 'name',
+            sorter: true, // ✅ Enable sorting
+        },
+        {
+            title: 'Price',
+            dataIndex: 'price',
+            sorter: true, // ✅ Enable sorting
+            render: (price: any) => `₹ ${parseFloat(price).toFixed(2)}`,
+        },
+        {
+            title: 'Stock',
+            dataIndex: 'stock',
+            sorter: true, // ✅ Enable sorting
+        },
         {
             title: 'Category',
-            dataIndex: ['category', 'name'], // AntD supports nested paths
-            render: (_: any, record: Product) => record.category?.name || '—'
+            dataIndex: ['category', 'name'],
+            sorter: true, // ✅ Enable sorting
+            render: (_: any, record: Product) => record.category?.name || '—',
         },
         {
             title: 'Actions',
             render: (_: any, record: Product) => (
                 <Space>
-                    <Button type="link" onClick={() => openModal(record)}>Edit</Button>
+                    <Button title={'Edit product'} icon={<EditOutlined />} type="link" onClick={() => openModal(record)}></Button>
                     <Popconfirm title="Delete this product?" onConfirm={() => handleDelete(record.id)}>
-                        <Button danger type="link">Delete</Button>
+                        <Button title={'Delete product'} icon={<DeleteOutlined />} danger type="link"></Button>
                     </Popconfirm>
                 </Space>
-            )
+            ),
         }
     ];
 
 
+
     return (
         <div>
-            <div style={{ marginBottom: 16 }}>
-                <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
-                    Add Product
+            <Space style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
+                <h1>Products</h1>
+                <div style={{ marginBottom: 16 }}>
+                    <Button icon={<PlusOutlined />} type="primary" onClick={() => openModal()}>
+                        Add Product
+                    </Button>
+                </div>
+            </Space>
+            <Space style={{ marginBottom: 16 }} wrap>
+                <Input
+                    placeholder="Search Name"
+                    value={filters.search}
+                    onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
+                    onPressEnter={() => loadProducts()}
+                />
+                <Select
+                    placeholder="Filter by Category"
+                    allowClear
+                    style={{ width: 200 }}
+                    value={filters.categoryId}
+                    options={categories.map(cat => ({ label: cat.name, value: cat.id }))}
+                    onChange={(val) => {
+                        setFilters(prev => ({ ...prev, categoryId: val }));
+                        loadProducts();
+                    }}
+                />
+                <InputNumber
+                    placeholder="Min Price"
+                    value={filters.minPrice}
+                    onChange={(val) => setFilters(prev => ({ ...prev, minPrice: val || undefined } as any))}
+                />
+                <InputNumber
+                    placeholder="Max Price"
+                    value={filters.maxPrice}
+                    onChange={(val) => setFilters(prev => ({ ...prev, maxPrice: val || undefined } as any))}
+                    onBlur={() => loadProducts()}
+                />
+                <InputNumber
+                    placeholder="Stock ≥"
+                    value={filters.stock}
+                    onChange={(val) => {
+                        setFilters(prev => ({ ...prev, stock: val || undefined } as any));
+                        loadProducts();
+                    }}
+                />
+                <Button type="primary" onClick={() => loadProducts()}>
+                    Apply
                 </Button>
-            </div>
+                <Button onClick={handleReset}>
+                    Reset Filters & Sort
+                </Button>
+                <Popconfirm title="Confirm for Delete selected products?" onConfirm={() => handleDelete()}>
+                    <Button
+                        title='Delete selected products'
+                        danger
+                        icon={<DeleteOutlined />}
+                        disabled={selectedRowKeys.length === 0}
+                    >
+                        Delete Selected
+                    </Button>
+                </Popconfirm>
+            </Space>
+
 
             <Table
                 columns={columns}
                 dataSource={products}
                 rowKey="id"
                 loading={loading}
-                pagination={{ pageSize: 10 }}
+                pagination={{
+                    current: pagination.current,
+                    pageSize: pagination.pageSize,
+                    total: pagination.total,
+                    showSizeChanger: true,
+                }}
+                rowSelection={{
+                    selectedRowKeys,
+                    onChange: (selectedKeys) => setSelectedRowKeys(selectedKeys),
+                }}
+                onChange={(pagination, filters, sorter: any) => {
+                    setPagination({ ...pagination, total: pagination.total || 0 } as any);
+                    setSorter(sorter);
+                    const sortOrder = sorter.order === 'ascend' ? 'ASC' : sorter.order === 'descend' ? 'DESC' : undefined;
+                    loadProducts(pagination.current, pagination.pageSize, sorter.field, sortOrder);
+                }}
+
             />
 
             <Modal
@@ -186,14 +315,14 @@ const Products = () => {
                                     }
                                 }
                             }}
-                        />
+                        /> or
                         <Form.Item name="imageUrl" noStyle>
-                            <Input type="hidden" />
+                            <Input placeholder='Enter Image Url' onChange={(e) => setImagePreview(e.target.value)} />
                         </Form.Item>
 
                         {imagePreview && (
                             <img
-                                src={`http://localhost:3000${imagePreview}`}
+                                src={imagePreview.includes('uploads/') ? `http://localhost:3000${imagePreview}` : imagePreview}
                                 alt="Preview"
                                 style={{ marginTop: 10, width: 100 }}
                             />

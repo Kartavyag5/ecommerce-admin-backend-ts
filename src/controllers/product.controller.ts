@@ -1,15 +1,75 @@
 import { Request, Response } from 'express';
 import { Product, Category } from "../models";
+import { Op } from "sequelize";
 
 export const getAllProducts = async (req: any, res: any) => {
   try {
-    const products = await Product.findAll({
+    let {
+      page,
+      limit,
+      search = "",
+      sortBy = "createdAt",
+      order = "DESC",
+      categoryId,
+      minPrice,
+      maxPrice,
+      stock,
+    } = req.query;
+
+    const where: any = {};
+
+    if (search) {
+      where.name = { [Op.iLike]: `%${search}%` };
+    }
+
+    if (categoryId) {
+      where.categoryId = categoryId;
+    }
+
+    if (minPrice || maxPrice) {
+      where.price = {};
+      if (minPrice) {
+        where.price[Op.gte] = parseFloat(minPrice);
+      }
+      if (maxPrice) {
+        where.price[Op.lte] = parseFloat(maxPrice);
+      }
+    }
+
+    if (stock) {
+      where.stock = { [Op.gte]: parseInt(stock) };
+    }
+
+    const queryOptions: any = {
+      where,
       include: [
         { model: Category, as: "category", attributes: ["id", "name"] },
       ],
+      order: [[sortBy, order]],
+    };
+
+    // 👉 Only apply pagination if both page & limit are provided
+    if (page && limit) {
+      page = Number(page);
+      limit = Number(limit);
+      const offset = (page - 1) * limit;
+
+      queryOptions.limit = limit;
+      queryOptions.offset = offset;
+    }
+
+    const { rows: products, count: total } = await Product.findAndCountAll(
+      queryOptions
+    );
+
+    res.json({
+      data: products,
+      total,
+      page: page ? Number(page) : undefined,
+      pageSize: limit ? Number(limit) : undefined,
     });
-    res.json(products);
   } catch (err: any) {
+    console.error(err);
     res.status(500).json({ error: err.message });
   }
 };
@@ -20,32 +80,38 @@ export const getProductById = async (req: Request, res: Response) => {
   res.json(product);
 };
 
-// export const createProduct = async (req: Request, res: Response) => {
-//   const newProduct = await Product.create(req.body);
-//   res.status(201).json(newProduct);
-// };
-
-// export const updateProduct = async (req: Request, res: Response) => {
-//   const product = await Product.findByPk(req.params.id);
-//   if (!product) return res.status(404).json({ message: 'Product not found' });
-//   await product.update(req.body);
-//   res.json(product);
-// };
-
 export const createProduct = async (req: Request, res: Response) => {
   try {
-    const { name, description, price, stock, categoryId, image } = req.body;
+    const body = req.body;
+
+    // Case 1: Bulk Create (array of products)
+    if (Array.isArray(body)) {
+      if (body.length === 0) {
+        return res.status(400).json({ error: "No products provided" });
+      }
+
+      const products = await Product.bulkCreate(body, { validate: true });
+      return res
+        .status(201)
+        .json({ message: "Products created", data: products });
+    }
+
+    // Case 2: Single Product
+    const { name, description, price, stock, categoryId, imageUrl } = body;
+
     const product = await Product.create({
       name,
       description,
       price,
       stock,
       categoryId,
-      image,
+      imageUrl,
     });
-    res.json(product);
+
+    return res.status(201).json({ message: "Product created", data: product });
   } catch (err) {
-    res.status(500).json({ error: "Failed to create product" });
+    console.error(err);
+    return res.status(500).json({ error: "Failed to create product" });
   }
 };
 
@@ -70,11 +136,63 @@ export const updateProduct = async (req: Request, res: Response) => {
   }
 };
 
-
 export const deleteProduct = async (req: Request, res: Response) => {
-  const product = await Product.findByPk(req.params.id);
-  if (!product) return res.status(404).json({ message: 'Product not found' });
-  await product.destroy();
-  res.json({ message: 'Product deleted' });
+  try {
+    const { ids, range, all } = req.query;
+    const paramId = req.params.id;
+
+    // 1. DELETE /products/:id → Single Product
+    if (paramId) {
+      const product = await Product.findByPk(paramId);
+      if (!product)
+        return res.status(404).json({ message: "Product not found" });
+
+      await product.destroy();
+      return res.json({ message: `Product with id ${paramId} deleted` });
+    }
+
+    // 2. DELETE /products?ids=1,2,3 → Multiple by ID
+    if (ids) {
+      const idArray = (ids as string).split(",").map((id) => Number(id));
+      const deleted = await Product.destroy({
+        where: { id: { [Op.in]: idArray } },
+      });
+      return res.json({ message: `${deleted} products deleted` });
+    }
+
+    // 3. DELETE /products?range=3-10 → Range of IDs
+    if (range) {
+      const [start, end] = (range as string).split("-").map(Number);
+      if (isNaN(start) || isNaN(end)) {
+        return res
+          .status(400)
+          .json({ message: "Invalid range format. Use start-end." });
+      }
+      const deleted = await Product.destroy({
+        where: { id: { [Op.between]: [start, end] } },
+      });
+      return res.json({
+        message: `${deleted} products deleted from range ${start}-${end}`,
+      });
+    }
+
+    // 4. DELETE /products?all=true → Delete All Products
+    if (all === "true") {
+      const deleted = await Product.destroy({ where: {} });
+      return res.json({ message: `All (${deleted}) products deleted` });
+    }
+
+    return res
+      .status(400)
+      .json({
+        message: "Provide a valid delete target (id, ids, range, or all)",
+      });
+  } catch (err) {
+    console.error(err);
+    return res
+      .status(500)
+      .json({ message: "Error deleting product(s)", error: err });
+  }
 };
+
 

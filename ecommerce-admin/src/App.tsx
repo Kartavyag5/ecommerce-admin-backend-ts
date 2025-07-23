@@ -8,6 +8,8 @@ import Orders from './pages/Orders';
 import Customers from './pages/Customers';
 import Sidebar from './components/Sidebar';
 import Login from './pages/Login';
+import OrderItems from './pages/Orderitems';
+import CustomerCart from './pages/CustomerCart';
 
 const { Content } = Layout;
 
@@ -24,6 +26,8 @@ const App = () => {
             <Route path="/categories" element={<Categories />} />
             <Route path="/orders" element={<Orders />} />
             <Route path="/customers" element={<Customers />} />
+            <Route path="/order-items" element={<OrderItems />} />
+            <Route path="/cart-items" element={<CustomerCart />} />
           </Routes>
         </Content>
       </Layout>

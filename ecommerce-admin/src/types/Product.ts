@@ -6,9 +6,9 @@ export interface Product {
   description: string;
   price: number;
   categoryId: number;
-  category?: Category; // Optional: populated via join
+  category?: Category;
   createdAt?: string;
   updatedAt?: string;
-  stock?:number;
-  imageUrl:string;
+  stock?: number;
+  imageUrl: string;
 }

@@ -1,51 +1,53 @@
 import { DataTypes, Model, Sequelize } from "sequelize";
 
-class Order extends Model {
+class OrderItems extends Model {
   public id!: number;
-  public customerId!: number;
-  public status!: string;
-  public totalAmount!: number;
+  public orderId!: number;
+  public productId!: number;
+  public price!: number;
 
   static initModel(sequelize: Sequelize) {
-    Order.init(
+    OrderItems.init(
       {
         id: {
           type: DataTypes.INTEGER,
           autoIncrement: true,
           primaryKey: true,
         },
-        customerId: {
+        orderId: {
           type: DataTypes.INTEGER,
           allowNull: false,
           references: {
-            model: "customers",
+            model: "orders",
             key: "id",
           },
         },
-        status: {
-          type: DataTypes.ENUM(
-            "Pending",
-            "Processing",
-            "Shipped",
-            "Delivered",
-            "Cancelled"
-          ),
+        productId: {
+          type: DataTypes.INTEGER,
           allowNull: false,
-          defaultValue: "Pending", // optional: pending, shipped, delivered, etc.
+          references: {
+            model: "products",
+            key: "id",
+          },
         },
-        totalAmount: {
+        quantity: {
+            type: DataTypes.INTEGER, 
+            allowNull: false,
+            defaultValue: 1,
+         },
+        price: {
           type: DataTypes.DECIMAL(10, 2),
           allowNull: false,
         },
       },
       {
         sequelize,
-        modelName: "Order",
-        tableName: "orders",
+        modelName: "OrderItems",
+        tableName: "orderItem",
         timestamps: true,
       }
     );
   }
 }
 
-export default Order;
+export default OrderItems;

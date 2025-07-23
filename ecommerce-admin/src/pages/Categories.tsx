@@ -90,11 +90,14 @@ const Categories = () => {
 
   return (
     <div>
-      <div style={{ marginBottom: 16 }}>
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
-          Add Category
-        </Button>
-      </div>
+      <Space style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
+        <h1>Categories</h1>
+        <div style={{ marginBottom: 16 }}>
+          <Button icon={<PlusOutlined />} type="primary" onClick={() => openModal()}>
+            Add Category
+          </Button>
+        </div>
+      </Space>
 
       <Table
         columns={columns}

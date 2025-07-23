@@ -1,10 +1,46 @@
 import { Request, Response } from 'express';
 import { Customer } from '../models';
+import { Op } from "sequelize";
 
-export const getAllCustomers = async (_req: Request, res: Response) => {
-  const customers = await Customer.findAll();
-  res.json(customers);
+export const getAllCustomers = async (req: Request, res: Response) => {
+  try {
+    const {
+      page = 1,
+      limit = 10,
+      sortBy = "createdAt",
+      order = "DESC",
+      search = "",
+    } = req.query;
+
+    const offset = (Number(page) - 1) * Number(limit);
+
+    const whereClause = search
+      ? {
+          [Op.or]: [
+            { firstName: { [Op.iLike]: `%${search}%` } },
+            { lastName: { [Op.iLike]: `%${search}%` } },
+            { email: { [Op.iLike]: `%${search}%` } },
+            { phone: { [Op.iLike]: `%${search}%` } },
+          ],
+        }
+      : {};
+
+    const { rows, count } = await Customer.findAndCountAll({
+      where: whereClause,
+      order: [[String(sortBy), String(order).toUpperCase()]],
+      offset,
+      limit: Number(limit),
+    });
+
+    res.json({
+      data: rows,
+      total: count,
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 };
+
 
 export const getCustomerById = async (req: Request, res: Response) => {
   const customer = await Customer.findByPk(req.params.id);

@@ -7,6 +7,8 @@ import Category from "./category.model";
 import Order from "./order.model";
 import Customer from "./customer.model";
 import AdminUser from "./adminuser.model";
+import OrderItems from "./orderItems.model";
+import CustomerCart from "./CustomerCart.model";
 
 // Initialize Sequelize instance
 const sequelize = new Sequelize(
@@ -26,6 +28,8 @@ Category.initModel(sequelize);
 Order.initModel(sequelize);
 Customer.initModel(sequelize);
 AdminUser.initModel(sequelize);
+OrderItems.initModel(sequelize);
+CustomerCart.initModel(sequelize);
 
 // Define model associations
 
@@ -37,5 +41,25 @@ Category.hasMany(Product, { foreignKey: "categoryId", as: "products" });
 Order.belongsTo(Customer, { foreignKey: "customerId", as: "customer" });
 Customer.hasMany(Order, { foreignKey: "customerId", as: "orders" });
 
+OrderItems.belongsTo(Order, { foreignKey: "orderId", as: "order" });
+Order.hasMany(OrderItems, { foreignKey: "orderId", as: "orderItems" });
+
+OrderItems.belongsTo(Product, { foreignKey: "productId", as: "product" });
+Product.hasMany(OrderItems, { foreignKey: "productId", as: "orderItems" });
+
+CustomerCart.belongsTo(Customer, { foreignKey: "customerId", as: "customer" });
+CustomerCart.belongsTo(Product, { foreignKey: "productId", as: "product" });
+
+Customer.hasMany(CustomerCart, { foreignKey: "customerId", as: "cartItems" });
+// Product.hasMany(CustomerCart, { foreignKey: "productId", as: "cartItems" });
+
 export { sequelize };
-export { Product, Category, Order, Customer, AdminUser };
+export {
+  Product,
+  Category,
+  Order,
+  Customer,
+  AdminUser,
+  OrderItems,
+  CustomerCart,
+};
