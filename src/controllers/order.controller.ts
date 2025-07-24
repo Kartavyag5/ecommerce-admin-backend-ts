@@ -11,6 +11,7 @@ export const getAllOrders = async (req: Request, res: Response) => {
       limit = 10,
       customerId,
       search,
+      status,
       sortBy = "createdAt",
       order = "DESC",
     } = req.query;
@@ -20,6 +21,8 @@ export const getAllOrders = async (req: Request, res: Response) => {
 
     // Filter by customerId
     if (customerId) whereClause.customerId = customerId;
+    // Filter by status
+    if (status) whereClause.status = status;
 
     // Search by customer name
     if (search) {
