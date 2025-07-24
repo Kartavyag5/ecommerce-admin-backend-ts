@@ -1,15 +1,25 @@
 import express from 'express';
-import * as customerController from '../controllers/customer.controller';
-import authMiddleware from '../middlewares/auth.middleware';
+import {
+  getAllCustomers,
+  getCustomerById,
+  createCustomer,
+  customerLogin,
+  deleteCustomer,
+  updateCustomer,
+  refreshAccessToken,
+} from "../controllers/customer.controller";
+import authMiddleware from "../middlewares/auth.middleware";
 
 const router = express.Router();
 
 router.use(authMiddleware);
 
-router.get('/', customerController.getAllCustomers);
-router.get('/:id', customerController.getCustomerById);
-router.post('/', customerController.createCustomer);
-router.put('/:id', customerController.updateCustomer);
-router.delete('/:id', customerController.deleteCustomer);
+router.get("/", getAllCustomers);
+router.get("/:id", getCustomerById);
+router.post("/", createCustomer);
+router.put("/:id", updateCustomer);
+router.delete("/:id", deleteCustomer);
+router.post("/login", customerLogin);
+router.post("/refresh-token", refreshAccessToken);
 
 export default router;
