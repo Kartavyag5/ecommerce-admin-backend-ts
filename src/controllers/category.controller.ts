@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { Category, Product } from "../models";
+import { Op } from "sequelize";
 
 export const getAllCategories = async (_req: Request, res: Response) => {
   const categories = await Category.findAll();
@@ -12,27 +13,56 @@ export const getCategoryById = async (req: Request, res: Response) => {
   res.json(category);
 };
 
-import { Op } from "sequelize";
-
 export const createCategory = async (req: Request, res: Response) => {
-  const { name } = req.body;
+  try {
+    const categories = Array.isArray(req.body) ? req.body : [req.body];
 
-  // Check if category with same name exists (case-insensitive)
-  const existing = await Category.findOne({
-    where: {
-      name: { [Op.iLike]: name.trim() },
-    },
-  });
+    const validCategories = categories
+      .filter((cat) => cat.name && typeof cat.name === "string")
+      .map((cat) => ({
+        name: cat.name.trim(),
+        description: cat.description?.trim() || null,
+      }));
 
-  if (existing) {
-    return res
-      .status(400)
-      .json({ message: "Category with this name already exists." });
+    if (validCategories.length === 0) {
+      return res.status(400).json({ message: "No valid categories provided." });
+    }
+
+    // Fetch existing categories (case-insensitive)
+    const existing = await Category.findAll({
+      where: {
+        name: {
+          [Op.iLike]: {
+            [Op.any]: validCategories.map((cat) => cat.name),
+          },
+        },
+      },
+    });
+
+    const existingNames = existing.map((cat) => cat.name.toLowerCase());
+
+    // Filter out duplicates
+    const newCategories = validCategories.filter(
+      (cat) => !existingNames.includes(cat.name.toLowerCase())
+    );
+
+    // Bulk create
+    const created = await Category.bulkCreate(newCategories);
+
+    res.status(201).json({
+      createdCount: created.length,
+      skippedCount: validCategories.length - created.length,
+      created,
+      skipped: validCategories.filter((cat) =>
+        existingNames.includes(cat.name.toLowerCase())
+      ),
+    });
+  } catch (error) {
+    console.error("Error creating categories:", error);
+    res.status(500).json({ message: "Internal server error." });
   }
-
-  const newCategory = await Category.create({ name: name.trim() });
-  res.status(201).json(newCategory);
 };
+
 
 export const updateCategory = async (req: Request, res: Response) => {
   const category = await Category.findByPk(req.params.id);
