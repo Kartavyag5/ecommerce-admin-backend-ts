@@ -8,9 +8,9 @@
   },
   "test": {
     "username": "postgres",
-    "password": "1234",
-    "database": "ecommerce_admin",
-    "host": "localhost",
+    "password": "igszXhuhCFrrLzuJdVJZbUivVCWCoDFL",
+    "database": "railway",
+    "host": "postgres-production-6b73.up.railway.app",
     "dialect": "postgres"
   },
   "production": {

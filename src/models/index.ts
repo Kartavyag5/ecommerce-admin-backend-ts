@@ -1,6 +1,5 @@
 import { Sequelize } from 'sequelize';
-import dotenv from 'dotenv';
-dotenv.config();
+import dotenv from "dotenv";
 
 import Product from "./product.model";
 import Category from "./category.model";
@@ -10,17 +9,18 @@ import AdminUser from "./adminuser.model";
 import OrderItems from "./orderItems.model";
 import CustomerCart from "./CustomerCart.model";
 
+dotenv.config();
+const process = require("process");
 // Initialize Sequelize instance
-const sequelize = new Sequelize(
-  process.env.DB_NAME || "ecommerce_admin",
-  process.env.DB_USER || "postgres",
-  process.env.DB_PASSWORD || "1234",
-  {
-    host: process.env.DB_HOST || "localhost",
-    dialect: "postgres",
-    logging: false,
-  }
-);
+const sequelize = new Sequelize({
+  username: process.env.DB_USER,
+  database: process.env.DB_NAME,
+  password: process.env.DB_PASSWORD,
+  host: process.env.DB_HOST,
+  dialect: "postgres",
+  port: 25786,
+  logging: false,
+});
 
 // Initialize models with sequelize instance
 Product.initModel(sequelize);

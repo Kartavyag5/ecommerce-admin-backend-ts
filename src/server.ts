@@ -16,5 +16,6 @@ app.listen(PORT, async () => {
     .catch((err) => {
       console.error("DB connection error:", err);
     });
+  // await sequelize.sync({ alter: true });
   await sequelize.sync();
 });
