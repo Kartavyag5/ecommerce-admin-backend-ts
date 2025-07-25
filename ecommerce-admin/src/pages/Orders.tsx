@@ -131,6 +131,15 @@ const Orders = () => {
         }
     };
 
+
+    // Inside Orders component, before return
+    const getAvailableProductOptions = (selectedProductIds: number[]) => {
+        return products
+            .filter((p) => !selectedProductIds.includes(p.id))
+            .map((p) => ({ label: p.name, value: p.id }));
+    };
+
+
     const columns = [
         { title: 'ID', dataIndex: 'id' },
         {
@@ -241,48 +250,66 @@ const Orders = () => {
                         />
                     </Form.Item>
 
-                    <Form.List name="products" rules={[{ required: true, message: 'Add at least one product' }]}>
-                        {(fields, { add, remove }) => (
-                            <>
-                                {fields.map(({ key, name, ...restField }) => (
-                                    <Row gutter={16} key={key} style={{ marginBottom: 8 }}>
-                                        <Col span={14}>
-                                            <Form.Item
-                                                {...restField}
-                                                name={[name, 'productId']}
-                                                rules={[{ required: true, message: 'Select product' }]}
-                                            >
-                                                <Select
-                                                    placeholder="Select product"
-                                                    options={products.map((p: any) => ({
-                                                        label: p.name,
-                                                        value: p.id
-                                                    }))}
-                                                />
-                                            </Form.Item>
-                                        </Col>
-                                        <Col span={8}>
-                                            <Form.Item
-                                                {...restField}
-                                                name={[name, 'quantity']}
-                                                rules={[{ required: true, message: 'Enter quantity' }]}
-                                            >
-                                                <InputNumber min={1} placeholder="Quantity" style={{ width: '100%' }} />
-                                            </Form.Item>
-                                        </Col>
-                                        <Col span={2} >
-                                            <CloseCircleOutlined onClick={() => remove(name)} />
-                                        </Col>
-                                    </Row>
-                                ))}
-                                <Form.Item>
-                                    <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
-                                        Add Product
-                                    </Button>
-                                </Form.Item>
-                            </>
-                        )}
+                    <Form.List name="products" rules={[{ required: true, message: 'Add at least one product' } as any]}>
+                        {(fields, { add, remove }) => {
+                            const selectedProductIds = form.getFieldValue('products')?.map((p: any) => p?.productId) || [];
+
+                            return (
+                                <>
+                                    {fields.map(({ key, name, ...restField }, index) => {
+                                        const currentSelected = selectedProductIds.filter((_: any, i: any) => i !== index); // Exclude current row
+                                        const options = getAvailableProductOptions(currentSelected);
+
+                                        return (
+                                            <Row gutter={16} key={key} style={{ marginBottom: 8 }}>
+                                                <Col span={14}>
+                                                    <Form.Item
+                                                        {...restField}
+                                                        name={[name, 'productId']}
+                                                        rules={[{ required: true, message: 'Select product' }]}
+                                                    >
+                                                        <Select
+                                                            placeholder="Select product"
+                                                            options={options}
+                                                            showSearch
+                                                            filterOption={(input, option) =>
+                                                                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                                                            }
+                                                        />
+                                                    </Form.Item>
+                                                </Col>
+                                                <Col span={8}>
+                                                    <Form.Item
+                                                        {...restField}
+                                                        name={[name, 'quantity']}
+                                                        rules={[{ required: true, message: 'Enter quantity' }]}
+                                                    >
+                                                        <InputNumber min={1} placeholder="Quantity" style={{ width: '100%' }} />
+                                                    </Form.Item>
+                                                </Col>
+                                                <Col span={2}>
+                                                    <CloseCircleOutlined onClick={() => remove(name)} style={{ color: 'red', fontSize: 16, cursor: 'pointer' }} />
+                                                </Col>
+                                            </Row>
+                                        );
+                                    })}
+
+                                    <Form.Item>
+                                        <Button
+                                            type="dashed"
+                                            onClick={() => add()}
+                                            block
+                                            disabled={selectedProductIds.length >= products.length}
+                                            icon={<PlusOutlined />}
+                                        >
+                                            Add Product
+                                        </Button>
+                                    </Form.Item>
+                                </>
+                            );
+                        }}
                     </Form.List>
+
                 </Form>
             </Modal>
         </div>

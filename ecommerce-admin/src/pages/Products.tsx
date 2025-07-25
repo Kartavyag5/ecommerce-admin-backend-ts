@@ -26,6 +26,7 @@ const Products = () => {
     const [sorter, setSorter] = useState<any>({});
     const [filters, setFilters] = useState<{ search?: string; categoryId?: number; minPrice?: number; maxPrice?: number; stock?: number }>({});
     const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+    const [submitLoading, setSubmitLoading] = useState(false);
 
     useEffect(() => {
         loadProducts();
@@ -61,11 +62,6 @@ const Products = () => {
         }
     };
 
-
-    useEffect(() => {
-        loadProducts();
-    }, []);
-
     const openModal = (product?: Product) => {
         if (product) {
             setEditingProduct(product);
@@ -81,8 +77,9 @@ const Products = () => {
 
     const handleSubmit = async () => {
         try {
+            setSubmitLoading(true); // Start loading
             const values = await form.validateFields();
-            console.log('values: ', values);
+
             if (editingProduct) {
                 await updateProduct(editingProduct.id, values);
                 message.success('Product updated');
@@ -90,10 +87,13 @@ const Products = () => {
                 await createProduct(values);
                 message.success('Product created');
             }
+
             setIsModalOpen(false);
             loadProducts();
         } catch (err) {
             message.error('Failed to save product');
+        } finally {
+            setSubmitLoading(false); // Stop loading
         }
     };
 
@@ -272,7 +272,9 @@ const Products = () => {
                 onCancel={() => setIsModalOpen(false)}
                 onOk={handleSubmit}
                 okText="Save"
+                confirmLoading={submitLoading} // Loader added here!
             >
+
                 <Form form={form} layout="vertical">
                     <Form.Item name="name" label="Product Name" rules={[{ required: true }]}>
                         <Input />
