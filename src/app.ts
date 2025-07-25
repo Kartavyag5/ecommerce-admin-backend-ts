@@ -1,12 +1,12 @@
 import express from 'express';
-import cors from 'cors';
-import dotenv from 'dotenv';
-import authRoutes from './routes/auth.routes';
-import productRoutes from './routes/product.routes';
-import categoryRoutes from './routes/category.routes';
-import orderRoutes from './routes/order.routes';
-import customerRoutes from './routes/customer.routes';
-import dashboardRoutes from './routes/dashboard.routes';
+import cookieParser from "cookie-parser";
+import cors from "cors";
+import dotenv from "dotenv";
+import productRoutes from "./routes/product.routes";
+import categoryRoutes from "./routes/category.routes";
+import orderRoutes from "./routes/order.routes";
+import customerRoutes from "./routes/customer.routes";
+import dashboardRoutes from "./routes/dashboard.routes";
 import adminAuthRoutes from "./routes/adminAuth.routes";
 import uploadRoute from "./routes/uploadRoute";
 import orderItemsRoutes from "./routes/orderItems.routes";
@@ -16,10 +16,15 @@ import customerCartRoutes from "./routes/customerCart.routes";
 dotenv.config();
 
 const app = express();
-app.use(cors());
+app.use(cookieParser());
+app.use(
+  cors({
+    origin: "http://localhost:5173", // your frontend URL
+    credentials: true, // allow cookies to be sent
+  })
+);
 app.use(express.json());
 
-app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/orders", orderRoutes);

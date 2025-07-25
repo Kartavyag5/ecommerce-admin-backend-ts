@@ -1,9 +1,14 @@
 import { Router } from 'express';
-import { registerAdmin, loginAdmin } from '../controllers/adminAuth.controller';
+import {
+  registerAdmin,
+  loginAdmin,
+  refreshToken,
+} from "../controllers/adminAuth.controller";
 
 const router = Router();
 
-router.post('/register', registerAdmin);
-router.post('/login', loginAdmin);
+router.post("/register", registerAdmin);
+router.post("/login", loginAdmin);
+router.post("/refresh-token", refreshToken);
 
 export default router;

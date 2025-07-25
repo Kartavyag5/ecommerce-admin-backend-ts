@@ -1,7 +1,8 @@
 // src/components/Sidebar.tsx
 import { Layout, Menu } from 'antd';
-import { DashboardOutlined, ShoppingOutlined, TagsOutlined, TeamOutlined, FileTextOutlined, ShoppingCartOutlined, DropboxOutlined } from '@ant-design/icons';
+import { DashboardOutlined, ShoppingOutlined, TagsOutlined, TeamOutlined, FileTextOutlined, ShoppingCartOutlined, DropboxOutlined, LogoutOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import { logout } from '../utils/logout';
 
 const { Sider } = Layout;
 
@@ -16,13 +17,14 @@ const Sidebar = () => {
         mode="inline"
         onClick={({ key }) => navigate(key)}
         items={[
-          { key: '/', icon: <DashboardOutlined />, label: 'Dashboard' },
+          { key: '/dashboard', icon: <DashboardOutlined />, label: 'Dashboard' },
           { key: '/products', icon: <ShoppingOutlined />, label: 'Products' },
           { key: '/categories', icon: <TagsOutlined />, label: 'Categories' },
           { key: '/orders', icon: <FileTextOutlined />, label: 'Orders' },
           { key: '/customers', icon: <TeamOutlined />, label: 'Customers' },
           { key: '/order-items', icon: <DropboxOutlined />, label: 'Order Items' },
           { key: '/cart-items', icon: <ShoppingCartOutlined />, label: 'Cart Items' },
+          { key: '/', icon: <LogoutOutlined />, onClick: logout, label: 'Logout' },
         ]}
       />
     </Sider>

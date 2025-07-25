@@ -53,7 +53,7 @@ export const loginAdmin = async (req: Request, res: Response) => {
     const accessToken = jwt.sign(
       { id: admin.id, email: admin.email },
       JWT_SECRET,
-      { expiresIn: "15m" }
+      { expiresIn: "10m" }
     );
 
     // Generate Refresh Token
@@ -99,7 +99,7 @@ export const refreshToken = (req: Request, res: Response) => {
       { id: decoded.id, email: decoded.email },
       JWT_SECRET,
       {
-        expiresIn: "15m",
+        expiresIn: "10m",
       }
     );
 
