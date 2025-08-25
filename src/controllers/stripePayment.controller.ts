@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 
-const stripe = require('stripe')('sk_test_51J8L2bSBLK7PNVunUxH2yM7BKNbOhYOJ5Xcr5DMz7k5VaJxqcgVTFqWvQ92hz24rFrsjgS7q8vVLZ4zQnhYy8C8M00iaEQGVsQ');
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 export const createCheckoutSession = async (req: Request, res: Response) => {
     try{
