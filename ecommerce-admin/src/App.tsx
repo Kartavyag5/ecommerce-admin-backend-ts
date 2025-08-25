@@ -11,6 +11,10 @@ import Login from "./pages/Login";
 import OrderItems from "./pages/Orderitems";
 import CustomerCart from "./pages/CustomerCart";
 import ProtectedRoute from "./components/ProtectedRoute";
+import Checkout from "./pages/StripeCheckoutForm";
+import FailPage from "./components/Fail";
+import SuccessPage from "./components/Success";
+import Payments from "./pages/Payments";
 
 const { Content } = Layout;
 
@@ -34,8 +38,11 @@ const App = () => {
               <Route path="/categories" element={<Categories />} />
               <Route path="/orders" element={<Orders />} />
               <Route path="/customers" element={<Customers />} />
+              <Route path="/payments" element={<Payments />} />
               <Route path="/order-items" element={<OrderItems />} />
               <Route path="/cart-items" element={<CustomerCart />} />
+              <Route path="/payment-fail" element={<FailPage />} />
+              <Route path="/payment-success" element={<SuccessPage />} />
             </Route>
           </Routes>
         </Content>

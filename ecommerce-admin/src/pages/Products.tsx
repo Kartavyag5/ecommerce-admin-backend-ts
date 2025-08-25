@@ -2,13 +2,14 @@ import { useEffect, useState } from 'react';
 import {
     Table, Button, Modal, Form, Input, InputNumber, Space, Popconfirm, message
 } from 'antd';
-import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined, PlusOutlined, UndoOutlined } from '@ant-design/icons';
 import { getProducts, createProduct, updateProduct, deleteProduct } from '../api/productApi';
 import type { Product } from '../types/Product';
 import { Select } from 'antd';
 import { getCategories } from '../api/categoryApi';
 import type { Category } from '../types/Category';
 import axios from 'axios';
+import API from '../api/axios';
 // import { Upload } from 'antd';
 // import { UploadOutlined } from '@ant-design/icons';
 // import type { UploadChangeParam } from 'antd/es/upload';
@@ -101,7 +102,7 @@ const Products = () => {
     const handleDelete = async (id?: number) => {
         try {
             if (id) {
-            await deleteProduct(id);
+                await deleteProduct({ ids: [id] });
             message.success('Product deleted');
             } else if (selectedRowKeys.length) {
                 await deleteProduct({ ids: selectedRowKeys } as any);
@@ -117,6 +118,15 @@ const Products = () => {
         }
     };
 
+    const handleRestore = async (id: number) => {
+        try {
+            await API.patch(`/products/restore/${id}`);
+            message.success('Product restored');
+            loadProducts();
+        } catch {
+            message.error('Failed to restore product');
+        }
+    };
 
 
     const handleReset = () => {
@@ -161,17 +171,45 @@ const Products = () => {
             sorter: true, // ✅ Enable sorting
             render: (_: any, record: Product) => record.category?.name || '—',
         },
+        // {
+        //     title: 'Actions',
+        //     render: (_: any, record: Product) => (
+        //         <Space>
+        //             <Button title={'Edit product'} icon={<EditOutlined />} type="link" onClick={() => openModal(record)}></Button>
+        //             <Popconfirm title="Delete this product?" onConfirm={() => handleDelete(record.id)}>
+        //                 <Button title={'Delete product'} icon={<DeleteOutlined />} danger type="link"></Button>
+        //             </Popconfirm>
+        //         </Space>
+        //     ),
+        // },
         {
             title: 'Actions',
             render: (_: any, record: Product) => (
                 <Space>
-                    <Button title={'Edit product'} icon={<EditOutlined />} type="link" onClick={() => openModal(record)}></Button>
-                    <Popconfirm title="Delete this product?" onConfirm={() => handleDelete(record.id)}>
-                        <Button title={'Delete product'} icon={<DeleteOutlined />} danger type="link"></Button>
-                    </Popconfirm>
+                    {!record.deletedAt ? (
+                        <>
+                            <Button title="Edit product" icon={<EditOutlined />} type="link" onClick={() => openModal(record)} />
+                            <Popconfirm title="Delete this product?" onConfirm={() => handleDelete(record.id)}>
+                                <Button title="Delete product" icon={<DeleteOutlined />} danger type="link" />
+                            </Popconfirm>
+                        </>
+                    ) : (
+                        <Popconfirm title="Restore this product?" onConfirm={() => handleRestore(record.id)}>
+                            <Button icon={<UndoOutlined />} type="link">
+                                Restore
+                            </Button>
+                        </Popconfirm>
+                    )}
                 </Space>
             ),
-        }
+        },
+
+        {
+            title: 'Deleted At',
+            dataIndex: 'deletedAt',
+            render: (value: string | null) => (value ? new Date(value).toLocaleString() : '—'),
+            sorter: true,
+        },
     ];
 
 

@@ -48,6 +48,8 @@ class Product extends Model {
         sequelize,
         modelName: "Product",
         tableName: "products",
+        paranoid: true, // Enables soft delete
+        deletedAt: "deletedAt",
         timestamps: true,
       }
     );

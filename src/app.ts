@@ -12,6 +12,7 @@ import uploadRoute from "./routes/uploadRoute";
 import orderItemsRoutes from "./routes/orderItems.routes";
 import path from "path";
 import customerCartRoutes from "./routes/customerCart.routes";
+import paymentRoutes from "./routes/payment.routes";
 
 dotenv.config();
 
@@ -19,7 +20,7 @@ const app = express();
 app.use(cookieParser());
 app.use(
   cors({
-    origin: "http://localhost:5173", // your frontend URL
+    origin: ["http://localhost:5173", "http://localhost:3001"], // your frontend URL
     credentials: true, // allow cookies to be sent
   })
 );
@@ -34,6 +35,7 @@ app.use("/api/admin/auth", adminAuthRoutes);
 app.use("/api/order-items", orderItemsRoutes);
 app.use("/api/customer-cart", customerCartRoutes);
 app.use("/api/upload", uploadRoute);
+app.use("/api/payments", paymentRoutes);
 
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 

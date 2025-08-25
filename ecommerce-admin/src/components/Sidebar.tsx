@@ -18,11 +18,12 @@ const Sidebar = () => {
         onClick={({ key }) => navigate(key)}
         items={[
           { key: '/dashboard', icon: <DashboardOutlined />, label: 'Dashboard' },
+          { key: '/customers', icon: <TeamOutlined />, label: 'Customers' },
           { key: '/products', icon: <ShoppingOutlined />, label: 'Products' },
           { key: '/categories', icon: <TagsOutlined />, label: 'Categories' },
           { key: '/orders', icon: <FileTextOutlined />, label: 'Orders' },
-          { key: '/customers', icon: <TeamOutlined />, label: 'Customers' },
           { key: '/order-items', icon: <DropboxOutlined />, label: 'Order Items' },
+          { key: '/payments', icon: <FileTextOutlined />, label: 'Payments' },
           { key: '/cart-items', icon: <ShoppingCartOutlined />, label: 'Cart Items' },
           { key: '/', icon: <LogoutOutlined />, onClick: logout, label: 'Logout' },
         ]}

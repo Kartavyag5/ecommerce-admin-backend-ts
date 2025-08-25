@@ -11,4 +11,5 @@ export interface Product {
   updatedAt?: string;
   stock?: number;
   imageUrl: string;
+  deletedAt?: string | null; // Nullable for soft delete
 }

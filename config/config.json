@@ -1,4 +1,32 @@
 {
+  "///commented for local db": {
+    "development": {
+      "username": "postgres",
+      "password": "igszXhuhCFrrLzuJdVJZbUivVCWCoDFL",
+      "database": "railway",
+      "host": "switchback.proxy.rlwy.net",
+      "port": "25786",
+      "dialect": "postgres"
+    },
+
+    "test": {
+      "username": "postgres",
+      "password": "igszXhuhCFrrLzuJdVJZbUivVCWCoDFL",
+      "database": "railway",
+      "host": "switchback.proxy.rlwy.net",
+      "port": "25786",
+      "dialect": "postgres"
+    },
+    "production": {
+      "username": "postgres",
+      "password": "igszXhuhCFrrLzuJdVJZbUivVCWCoDFL",
+      "database": "railway",
+      "host": "switchback.proxy.rlwy.net",
+      "port": "25786",
+      "dialect": "postgres"
+    }
+  },
+
   "development": {
     "username": "postgres",
     "password": "1234",
@@ -8,9 +36,9 @@
   },
   "test": {
     "username": "postgres",
-    "password": "igszXhuhCFrrLzuJdVJZbUivVCWCoDFL",
-    "database": "railway",
-    "host": "postgres-production-6b73.up.railway.app",
+    "password": "1234",
+    "database": "ecommerce_admin",
+    "host": "localhost",
     "dialect": "postgres"
   },
   "production": {
@@ -21,3 +49,5 @@
     "dialect": "postgres"
   }
 }
+  
+

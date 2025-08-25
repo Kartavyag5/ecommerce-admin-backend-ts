@@ -9,6 +9,10 @@ import { getAllUsers } from '../api/customerApi';
 import { getProducts } from '../api/productApi';
 import type { Order } from '../types/Order';
 import { Input } from 'antd';
+import Swal from 'sweetalert2';
+import { useNavigate } from 'react-router-dom';
+import { loadStripe } from '@stripe/stripe-js';
+import API from '../api/axios';
 
 const Orders = () => {
     const [orders, setOrders] = useState<Order[]>([]);
@@ -16,6 +20,7 @@ const Orders = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingOrder, setEditingOrder] = useState<Order | null>(null);
     const [form] = Form.useForm();
+    const navigate = useNavigate();
     const [users, setUsers] = useState<{ id: number; firstName: string; lastName: string }[]>([]);
     const [products, setProducts] = useState<{ id: number; name: string }[]>([]);
     const { Search } = Input;
@@ -139,6 +144,34 @@ const Orders = () => {
             .map((p) => ({ label: p.name, value: p.id }));
     };
 
+    const handleCheckout = async (products: any) => {
+        const stripe: any = await loadStripe('pk_test_51J8L2bSBLK7PNVunSdZFJTjl7DQPUrW8XyStQrK7XAOGGqfEuuOwOnAZfyBRIsbrvG6rHBbvhSSHaEKPwWxU4CXE00skSI9DCu');
+        // navigate('/checkout');
+        const body = {
+            products: products,
+        }
+        const session: any = await API.post('/orders/create-checkout-session', body);
+        console.log('session: ', session);
+        const result = await stripe.redirectToCheckout({
+            sessionId: session.data.id,
+        })
+        if (result.error) {
+            console.error(result.error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Checkout failed',
+                text: result.error.message,
+            });
+        }
+        // Swal.fire({
+        //     // position: "top-end",
+        //     icon: "warning",
+        //     title: "Checkout functionality is not implemented yet",
+        //     showConfirmButton: false,
+        //     timer: 1500
+        // });
+    }
+
 
     const columns = [
         { title: 'ID', dataIndex: 'id' },
@@ -167,6 +200,14 @@ const Orders = () => {
                         <Button type="link" danger>Delete</Button>
                     </Popconfirm>
                 </Space>
+            )
+        },
+        {
+            title: 'Checkout',
+            render: (_: any, record: Order) => (
+                <Button type="primary" onClick={() => handleCheckout(record.orderItems)}>
+                    <CompressOutlined /> Checkout
+                </Button>
             )
         }
     ];
@@ -297,10 +338,23 @@ const Orders = () => {
                                     <Form.Item>
                                         <Button
                                             type="dashed"
-                                            onClick={() => add()}
                                             block
-                                            disabled={selectedProductIds.length >= products.length}
                                             icon={<PlusOutlined />}
+                                            disabled={selectedProductIds.length >= products.length}
+                                            onClick={() => {
+                                                const currentProducts = form.getFieldValue('products') || [];
+
+                                                // Check if last one is incomplete
+                                                if (currentProducts.length > 0) {
+                                                    const last = currentProducts[currentProducts.length - 1];
+                                                    if (!last?.productId || !last?.quantity) {
+                                                        message.warning('Please complete the current product entry before adding a new one');
+                                                        return;
+                                                    }
+                                                }
+
+                                                add();
+                                            }}
                                         >
                                             Add Product
                                         </Button>
